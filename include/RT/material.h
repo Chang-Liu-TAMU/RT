@@ -109,7 +109,7 @@ public:
     }
 
     __device__ float scatter_pdf(const ray& r_in, const hit_record& rec, ray& scattered) const override {
-        return 1.0;
+        //return 1.0;
         float cosine = dot(rec.normal, unit_vector(scattered.direction()));
         if (cosine < 0.0) cosine = 0.0;
         return cosine / 3.1415926;

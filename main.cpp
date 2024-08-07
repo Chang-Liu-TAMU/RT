@@ -706,7 +706,7 @@ int main() {
     //back_wall->setMatType(LAMBERTIAN);
     //back_wall->setTexIdx(3);
 
-    //pWin->traverseMesh([](Mesh* _p) { _p->loadSnapshot(); });
+    pWin->traverseMesh([](Mesh* _p) { _p->loadSnapshot(); });
 
     for (auto &[_, p] : meshesCollection) {
         PbrtEngine::getInstance().addMesh(p.get());

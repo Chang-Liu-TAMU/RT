@@ -42,3 +42,5 @@
 /models
 /assimp-vc143-mtd.dll
 /main.exe
+/output0.ppm
+/*.ppm

@@ -519,7 +519,7 @@ __device__ vec3 color(const ray& r, const bvh_node* world, int bvh_num, int tri_
 					if (pdf < 1e-6) {
 						return vec3(0.0, 0.0, 0.0);
 					}
-					pdf = 1.0;
+					//pdf = 1.0;
 					retColor *= srec.attenuation * mat->scatter_pdf(cur_ray, rec, scattered) / pdf;
 					if (srec.pdf_ptr)
 						delete srec.pdf_ptr;
