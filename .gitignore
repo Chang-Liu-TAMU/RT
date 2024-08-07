@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+/build
+/cache
+/images
+/models
+/include/thirdParty
