@@ -30,3 +30,17 @@
 *.exe
 *.out
 *.app
+/build
+/cache
+/build
+/bin
+/dlls
+/images
+/models
+/include/thirdParty
+/lib
+/models
+/assimp-vc143-mtd.dll
+/main.exe
+/output0.ppm
+/*.ppm
