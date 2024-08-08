@@ -145,7 +145,7 @@ cudaTextureObject_t cuTextureCubeMapFromFile(const char* _dir, bool gamma) {
 }
 
 cudaTextureObject_t* cuManyTextures(int &_num) {
-    std::vector<std::string> images{ "test01.png", "test02.png", "test03.png", "test04.png"};
+    std::vector<std::string> images{ "test01.png", "test02.png", "test03.png"};
     auto image_num = images.size();
     cudaTextureObject_t* h_cudaTexObj = new cudaTextureObject_t[image_num];
     for (int i = 0; i < image_num; i++) {

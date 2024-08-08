@@ -251,6 +251,11 @@ inline std::shared_ptr<Mesh> make_a_yz_plane(float lbz, float lby, float rtz, fl
 	v3.TexCoords = glm::vec2(1.0, 0.0);
 	v4.TexCoords = glm::vec2(1.0, 1.0);
 
+	//flip horizontally
+	/*v1.TexCoords = glm::vec2(1.0, 1.0);
+	v2.TexCoords = glm::vec2(1.0, 0.0);
+	v3.TexCoords = glm::vec2(0.0, 0.0);
+	v4.TexCoords = glm::vec2(0.0, 1.0);*/
 
 	if (_flip) {
 		v1.Normal = glm::vec3(1.0, 0.0, 0.0);
@@ -258,10 +263,10 @@ inline std::shared_ptr<Mesh> make_a_yz_plane(float lbz, float lby, float rtz, fl
 		v3.Normal = glm::vec3(1.0, 0.0, 0.0);
 		v4.Normal = glm::vec3(1.0, 0.0, 0.0);
 
-		v1.TexCoords = glm::vec2(1.0, 1.0);
+		/*v1.TexCoords = glm::vec2(1.0, 1.0);
 		v2.TexCoords = glm::vec2(1.0, 0.0);
 		v3.TexCoords = glm::vec2(0.0, 0.0);
-		v4.TexCoords = glm::vec2(0.0, 1.0);
+		v4.TexCoords = glm::vec2(0.0, 1.0);*/
 	}
 
 	decltype(Mesh::indices) indices{ 0, 1, 2, 0, 2, 3 };
@@ -422,8 +427,8 @@ MESH_PTR make_a_cube_mesh(vec3 lb, vec3 rt, float ry, vec3 translation, bool _se
 
 MESH_PTR make_a_cornell_light() {
 	float diff = 0;
-	int h = 10;
+	int h = 550;
 	//h = 780;
-	auto m = make_a_light(-4 - diff, -4 - diff,  4 + diff, 4 + diff, h, true);
+	auto m = make_a_light(227 - diff, 213 - diff, 332 + diff, 343 + diff, h, true);
 	return m;
 }

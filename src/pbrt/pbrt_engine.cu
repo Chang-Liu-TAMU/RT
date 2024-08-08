@@ -24,25 +24,19 @@
 
 __global__ void material_init(material** mat, curandState* _s) {
 	if (threadIdx.x == 0 && blockIdx.x == 0) {
-		//mat[0] = new metal(vec3(0.8, 0.85, 0.88), 0.1);
-		mat[0] = new lambertian(vec3(0.5, 0.5, 0.5));
+		mat[0] = new metal(vec3(0.8, 0.85, 0.88), 0.02);;
 		//mat[1] = new metal(vec3(.6, .5, .3), 0.1);
-		mat[1] = new lambertian(vec3(0.2, 0.4, 0.1));;
-		mat[2] = new dielectric(0.4);
+		mat[1] = new diffusive_light(vec3(20.0, 20.0, 20.0));;
+		mat[2] = new dielectric(0.8);
 		mat[3] = new diffusive_light(vec3(20.0, 20.0, 20.0));
 		mat[4] = new metal(vec3(1.0, 182.0 / 255.0, 193.0 / 255.0), 0.01);
 		mat[5] = new metal(vec3(0.8, 0.85, 0.88), 0.0);
-		mat[6] = new metal(vec3(0.7, 0.6, 0.5), 0.0);
+		mat[6] = new metal(vec3(0.8, 0.6, 0.2), 0.01);
 		mat[7] = new dielectric(1.5);
 		mat[8] = new lambertian(vec3(0.65, 0.05, 0.05));
 		mat[9] = new lambertian(vec3(0.12, 0.45, 0.15));
-		//mat[10] = new lambertian(vec3(0.73, 0.73, 0.73));
-		for (int i = 10; i < 30; i++) {
-			mat[i] = new lambertian(vec3(CURAND(_s), CURAND(_s), CURAND(_s)));
-		}
-		for (int i = 30; i < 50; i++) {
-			mat[i] = new metal(vec3(CURAND(_s), CURAND(_s), CURAND(_s)), CURAND(_s) / 50);
-		}
+		mat[10] = new lambertian(vec3(0.73, 0.73, 0.73));
+		mat[11] = new lambertian(vec3(102.0 / 255.0, 178.0 / 255.0, 255.0 / 255.0));
 	}
 }
 //
@@ -66,7 +60,7 @@ PbrtEngine::PbrtEngine(int _nx, int _ny, int _ns): nx(_nx), ny(_ny), ns(_ns) {
 	uponPixelNumChange();
 }
 
-#define CUFREE_IF_NOT_NULL(X) if (X) cudaFree(X);
+#define CUFREE_IF_NOT_NULL(X) if (X) {cudaFree(X); X = nullptr;}
 void PbrtEngine::refreshPixelNum() {
 	num_pixels = nx * ny;
 	CUFREE_IF_NOT_NULL(d_rand_state)
@@ -177,7 +171,6 @@ void PbrtEngine::__genTrianglesFromScene() {
 	}
 }
 
-
 void PbrtEngine::__genBvhNodes() {
 	auto num = m_vecTriangles.size();
 	std::cout << "Total num of Triangles: " << num << std::endl;
@@ -196,6 +189,8 @@ void PbrtEngine::__genBvhNodes() {
 	make_bvh_nodes(vecPtrIdxPair, 0, num, 0.0f, 1.0f, vecBvhNodes);
 	vecBvhNodesNum = vecBvhNodes.size();
 
+	CUFREE_IF_NOT_NULL(d_bvh_nodes)
+	CUFREE_IF_NOT_NULL(d_triangles)
 	checkCudaErrors(cudaMalloc((void**)&d_bvh_nodes, sizeof(bvh_node) * vecBvhNodes.size()));
 	checkCudaErrors(cudaMalloc((void**)&d_triangles, sizeof(Triangle) * num));
 	checkCudaErrors(cudaMemcpy(d_bvh_nodes, vecBvhNodes.data(), sizeof(vecBvhNodes) * vecBvhNodes.size(), cudaMemcpyHostToDevice));
@@ -501,12 +496,12 @@ __device__ vec3 color(const ray& r, const bvh_node* world, int bvh_num, int tri_
 					
 					hittable_pdf p2 = hittable_pdf(light, rec.p);
 					
-					float thres = 1.0;
+					float thres = 0.5;
 					if (CURAND(s) < thres) {
 						scattered = ray(rec.p, p1.generate(s), r.time());
 					}
 					else {
-						scattered = ray(rec.p, p1.generate(s), r.time());
+						scattered = ray(rec.p, p2.generate(s), r.time());
 					}
 					
 					//scattered = ray(rec.p, p.generate(s), r.time());
@@ -519,7 +514,6 @@ __device__ vec3 color(const ray& r, const bvh_node* world, int bvh_num, int tri_
 					if (pdf < 1e-6) {
 						return vec3(0.0, 0.0, 0.0);
 					}
-					//pdf = 1.0;
 					retColor *= srec.attenuation * mat->scatter_pdf(cur_ray, rec, scattered) / pdf;
 					if (srec.pdf_ptr)
 						delete srec.pdf_ptr;

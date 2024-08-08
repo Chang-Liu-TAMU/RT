@@ -83,6 +83,7 @@ public:
 		__allocateCudaStackMemory();
 	}
 
+
 	void set(int _nx, int _ny, int _ns) {
 		nx = _nx;
 		ny = _ny;

@@ -259,6 +259,21 @@ void console(Window *_pWin) {
                 continue;
             }
 
+            if (first == "sx") {
+                curr->scaleCommandX(std::stof(tokens[1]));
+                continue;
+            }
+
+            if (first == "sy") {
+                curr->scaleCommandY(std::stof(tokens[1]));
+                continue;
+            }
+
+            if (first == "sz") {
+                curr->scaleCommandZ(std::stof(tokens[1]));
+                continue;
+            }
+
             if (first == "log") {
                 if (tokens[1] == "position") {
                     if (tokens.size() < 3) {
@@ -378,32 +393,32 @@ int main() {
     return 0;*/
 
     //test
-	auto *pWin = new Window(SCR_WIDTH, SCR_HEIGHT);
+    auto* pWin = new Window(SCR_WIDTH, SCR_HEIGHT);
     pWin->setMeshesLock(&meshCollectionMtx);
-	if (!pWin->initSuccess()) {
-		std::cout << "Error: GLFW initalization error\n";
-		return -1;
-	}
-    
+    if (!pWin->initSuccess()) {
+        std::cout << "Error: GLFW initalization error\n";
+        return -1;
+    }
+
     pWin->setMeshesSrc(&meshesCollection);
 
     auto* pProgram01 = createProgram("shaders//lighting_maps.vs\0", "shaders//lighting_maps.fs\0");
-    
+
     auto* pProgram02 = createProgram("shaders//light_cube.vs\0", "shaders//light_cube.fs\0");
 
     auto* pProgram03 = createProgram("shaders//lighting_with_texture.vs\0", "shaders//lighting_with_texture.fs\0");
 
     auto* outlineShader = createProgram("shaders//outline.vs\0", "shaders//outline.fs\0");
-    
+
     commonShader = pProgram03;
 
     //cornell box
-    /*auto box01 = make_a_cube_mesh(vec3(0, 0, 0), vec3(165, 165, 165), -18, vec3(269, 0, 295)); 
-    box01->setName("box01"); 
+    /*auto box01 = make_a_cube_mesh(vec3(0, 0, 0), vec3(165, 165, 165), -18, vec3(269, 0, 295));
+    box01->setName("box01");
     box01->setProgramSubMesh(pProgram03);
     box01->setMatTypeSubMesh(METAL);
     box01->registerThisModel(meshesCollection);*/
-    
+
     //############################################# start
     auto light = make_a_cornell_light();
     light->setName("light");
@@ -411,127 +426,65 @@ int main() {
     light->registerThisModel(meshesCollection);
     light->setProgram(pProgram02);
     light->setOutlineShader(outlineShader);
-
-    /*auto box02 = make_a_cube_mesh(vec3(0, 0, 0), vec3(165, 330, 165), 15, vec3(130, 0, 65), true);
+#define X
+#ifdef X
+    auto box02 = make_a_cube_mesh(vec3(0, 0, 0), vec3(165, 330, 165), 15, vec3(130, 0, 65), true);
     box02->setMatTypeSubMesh(METAL);
     box02->setProgramSubMesh(pProgram03);
     box02->setName("box02");
     box02->registerThisModel(meshesCollection);
-    box02->setOutlineShader(outlineShader);*/
+    box02->setOutlineShader(outlineShader);
     //
-    
-    auto model1 = Model("models/teapot.obj", "t1", 1.0f);
-    auto mesh1 = model1.getFristMesh();
-    mesh1->setProgram(pProgram02);
-    mesh1->setMatType(5);
-    mesh1->registerThisModel(meshesCollection);
+#endif
 
-    /*auto model2 = Model("models/bunny.obj", "b1", 1.0f);
-    auto mesh2 = model2.getFristMesh();
-    mesh2->setProgram(pProgram01);
-    mesh2->setMatType(4);
-    mesh2->registerThisModel(meshesCollection);*/
 
-    auto model3 = Model("models/cube.obj", "cube", 1.0f);
+    auto model3 = Model("models/dragon.obj", "dragon", 1.0f);
     auto mesh3 = model3.getFristMesh();
     /*mesh3->textures.clear();
     mesh3->textures.push_back(Texture::getTexture("test01.png"));*/
-    mesh3->setMatType(8);
+    mesh3->setMatType(4);
     //mesh3->setTexIdx(0);
-    //mesh3->setMatType(DIELECTRIC);//���⣺ lambertian ��work ?? 
+    //mesh3->setMatType(DIELECTRIC);//问题： lambertian 不work ?? 
     mesh3->setProgram(pProgram01);
     mesh3->registerThisModel(meshesCollection);
-    mesh3->setIsSphere();
-    //mesh3->setOutlineShader(outlineShader);
+    //mesh3->setIsSphere();
+    mesh3->setOutlineShader(outlineShader);
 
-    //many spheres
-    auto localRadom = []() -> float {
-        return 2 * (drand48() - 0.5);
-    };
-    std::vector<vec3> all_centers {vec3(0, -1000, 0), vec3(0, 1, 0), vec3(-4, 1, 0), vec3(4, 1, 0)};
-    std::vector<float> all_radius {1000.0, 1.0, 1.0, 1.0};
-    //std::vector<int> all_mats {0, 7, 1, 6};
-    std::vector<int> all_mats {0, 7, 4, 6};
-    std::vector<bool> vec_flags(4, true);
-    int step = 2;
-    for (int a = -11; a < 11; a+=step) {
-        for (int b = -11; b < 11; b+=step) {
-            float choose_mat = drand48();
-            auto r = 0.2 + drand48() / 10;
-            vec3 center(a + 0.2 * localRadom(), r, b + 0.2 * localRadom());
-            if ((center - vec3(4, 0.2, 0)).length() > 0.9) {
-                all_centers.push_back(center);
-                all_radius.push_back(r);
-                if (drand48() < 0.5)
-                    vec_flags.push_back(false);
-                else
-                    vec_flags.push_back(true);
-                if (choose_mat < 0.3) {
-                    //diffuse
-                    all_mats.push_back(10 + drand48() * 20);
-                }
-                else if (choose_mat < 0.9) {
-                    all_mats.push_back(30 + drand48() * 20);
-                }
-                else {
-                    all_mats.push_back(7);
-                }
+    auto icosphereM = Model("models/icosphere.obj", "i1", 1.0f);
+    auto icosphere = icosphereM.getFristMesh();
+    /*icosphere->textures.clear();
+    icosphere->textures.push_back(Texture::getTexture("test01.png"));*/
+    icosphere->setMatType(METAL);
+    //icosphere->setTexIdx(0);
+    //icosphere->setMatType(DIELECTRIC);//问题： lambertian 不work ?? 
+    icosphere->setProgram(pProgram01);
+    icosphere->registerThisModel(meshesCollection);
+    //icosphere->setIsSphere();
+    icosphere->setOutlineShader(outlineShader);
 
-            }
-        }
-    }
+    auto cylinderM = Model("models/cylinder.obj", "cyl", 1.0f);
+    auto cylinder = cylinderM.getFristMesh();
+    /*mesh3->textures.clear();
+    mesh3->textures.push_back(Texture::getTexture("test01.png"));*/
+    cylinder->setMatType(0);
+    //mesh3->setTexIdx(0);
+    //mesh3->setMatType(DIELECTRIC);//问题： lambertian 不work ?? 
+    cylinder->setProgram(pProgram01);
+    cylinder->registerThisModel(meshesCollection);
+    //mesh3->setIsSphere();
+    cylinder->setOutlineShader(outlineShader);
 
-    for (int i = 0; i < all_centers.size(); i++) {
-        auto mesh = std::make_shared<FlyWeight>(mesh3);
-        auto center = all_centers[i];
-        auto r = all_radius[i];
-        auto mat = all_mats[i];
-        auto flag = vec_flags[i];
-        mesh->setName("c" + std::to_string(i));
-        mesh->setMatType(mat);
-        mesh->setProgram(pProgram01);
-        mesh->setPositionFromVec3(center);
-        mesh->m_fScale = r;
-        mesh->registerThisModel(meshesCollection);
-        if (flag) {
-            mesh->setIsSphere();
-        }
-        
-    }
-    
-    //many spheres
-
-    //auto mesh4 = std::make_shared<FlyWeight>(mesh3);
-    //mesh4->setName("c1");
-    //mesh4->setMatType(4);
-    //mesh4->setProgram(pProgram01);
-    //mesh4->registerThisModel(meshesCollection);
-    //mesh4->setIsSphere();
-
-    //auto mesh5 = std::make_shared<FlyWeight>(mesh3);
-    //mesh5->setName("c2");
-    ////mesh5->setMatType(9);
-    //mesh5->setMatType(2);
-    ////mesh5->setMatType(5);
-    //mesh5->setProgram(pProgram01);
-    //mesh5->registerThisModel(meshesCollection);
-    //mesh5->setIsSphere();
-    //
-    //auto mesh6 = std::make_shared<FlyWeight>(mesh3);
-    //mesh6->setName("c3");
-    //mesh6->setMatType(5);
-    //mesh6->setProgram(pProgram01);
-    //mesh6->registerThisModel(meshesCollection);
-    //mesh6->setIsSphere();
-    //
-
-    //auto floor = make_a_zx_plane(-500, -500, 500, 500, 0);
-    //floor->setName("floor");
-    //floor->registerThisModel(meshesCollection);
-    //floor->setProgram(pProgram01);
-    //floor->setMatType(0);
-    //floor->setOutlineShader(outlineShader);
-    //floor->setMatType(0);
+    auto coneM = Model("models/cone.obj", "cone", 1.0f);
+    auto cone = coneM.getFristMesh();
+    /*mesh3->textures.clear();
+    mesh3->textures.push_back(Texture::getTexture("test01.png"));*/
+    cone->setMatType(METAL);
+    //mesh3->setTexIdx(0);
+    //mesh3->setMatType(DIELECTRIC);//问题： lambertian 不work ?? 
+    cone->setProgram(pProgram01);
+    cone->registerThisModel(meshesCollection);
+    //mesh3->setIsSphere();
+    cone->setOutlineShader(outlineShader);
 
 #ifdef X
     /*auto model4= Model("models/girl.obj", "girl", 1.0f);
@@ -545,8 +498,8 @@ int main() {
     mesh4->setOutlineShader(outlineShader);*/
     //mesh4->setIsSphere();
 
-    
-    
+
+
     auto left_wall = make_a_yz_plane(0, 0, 555, 555, 0, true);
     left_wall->setName("left_wall");
     left_wall->registerThisModel(meshesCollection);
@@ -555,15 +508,16 @@ int main() {
     left_wall->setOutlineShader(outlineShader);
     //left_wall->setMatType(LAMBERTIAN);
     //left_wall->setMatType(5);
-    //left_wall->setTexIdx(1);
+    left_wall->setTexIdx(2);
 
     auto right_wall = make_a_yz_plane(0, 0, 555, 555, 555);
     right_wall->setName("right_wall");
     right_wall->registerThisModel(meshesCollection);
     right_wall->setProgram(pProgram01);
-    right_wall->setMatType(9);
+    right_wall->setMatType(11);
     right_wall->setOutlineShader(outlineShader);
     //right_wall->setMatType(LAMBERTIAN);
+    //right_wall->setTexIdx(2);
 
     auto ceil = make_a_zx_plane(0, 0, 555, 555, 555, true);
     ceil->setName("ceil");
@@ -587,9 +541,9 @@ int main() {
     back_wall->setMatType(10);
     back_wall->setOutlineShader(outlineShader);
     //back_wall->setMatType(LAMBERTIAN);
-    //back_wall->setTexIdx(1);
+    back_wall->setTexIdx(1);
 
-    //addXyPlane(10.0, 10.0, 3, true); //���⣺ this is not okay why normal ���˲�work ???
+    //addXyPlane(10.0, 10.0, 3, true); //问题： this is not okay why normal 反了不work ???
     //############################################# end
 #endif
     //#########################     new start
@@ -603,7 +557,7 @@ int main() {
     auto model3 = Model("models/sphere.obj", "s1", 1.0f);
     auto mesh3 = model3.getFristMesh();
     mesh3->setMatType(5);
-    //mesh3->setMatType(DIELECTRIC);//���⣺ lambertian ��work ?? 
+    //mesh3->setMatType(DIELECTRIC);//问题： lambertian 不work ?? 
     mesh3->setProgram(pProgram01);
     mesh3->registerThisModel(meshesCollection);
     mesh3->setIsSphere();
@@ -661,54 +615,56 @@ int main() {
     //######################## new end
 #endif
     Camera::getInstance().loadSnapShot();
-   //cornel box
+    //cornel box
 
-    /*auto model1 = Model("models/monkey.obj", "m1", 1.0f);
-    auto mesh1 = model1.getFristMesh();
-    mesh1->setProgram(pProgram01);
-    mesh1->setMatType(1);
-    mesh1->registerThisModel(meshesCollection);*/
+     /*auto model1 = Model("models/monkey.obj", "m1", 1.0f);
+     auto mesh1 = model1.getFristMesh();
+     mesh1->setProgram(pProgram01);
+     mesh1->setMatType(1);
+     mesh1->registerThisModel(meshesCollection);*/
 
-    /*auto mesh2SP = make_a_light(2.0, 2.0);
-    auto* mesh2 = mesh2SP.get();
-    mesh2->setName("light");
-    mesh2->setMatType(LIGHT);
-    mesh2->registerThisModel(meshesCollection);
-    mesh2->setProgram(pProgram02);*/
+     /*auto mesh2SP = make_a_light(2.0, 2.0);
+     auto* mesh2 = mesh2SP.get();
+     mesh2->setName("light");
+     mesh2->setMatType(LIGHT);
+     mesh2->registerThisModel(meshesCollection);
+     mesh2->setProgram(pProgram02);*/
 
-    /*auto model3 = Model("models/cube.obj", "cube", 1.0f);
-    auto mesh3 = model3.getFristMesh();
-    mesh3->setMatType(METAL);
-    mesh3->setProgram(pProgram01);
-    mesh3->registerThisModel(meshesCollection);*/
+     /*auto model3 = Model("models/cube.obj", "cube", 1.0f);
+     auto mesh3 = model3.getFristMesh();
+     mesh3->setMatType(METAL);
+     mesh3->setProgram(pProgram01);
+     mesh3->registerThisModel(meshesCollection);*/
 
-    //auto model4 = Model("models/cube.obj", "", 1.0f);
-    //auto mesh4 = model4.getFristMesh();
-    ////mesh4->setIsSphere();
-    //mesh4->setMatType(METAL);
-    //mesh4->setProgram(pProgram01);
-    //mesh4->registerThisModel(meshesCollection);
+     //auto model4 = Model("models/cube.obj", "", 1.0f);
+     //auto mesh4 = model4.getFristMesh();
+     ////mesh4->setIsSphere();
+     //mesh4->setMatType(METAL);
+     //mesh4->setProgram(pProgram01);
+     //mesh4->registerThisModel(meshesCollection);
 
-    /*addXyPlane(1.0, 1.0, 0);
-    addYzPlane(1.0, 1.0, 1);
-    addZxPlane(1.0, 1.0, 2);
-    addXyPlane(1.0, 1.0, 0, true);
-    addYzPlane(1.0, 1.0, 1, true);
-    addZxPlane(1.0, 1.0, 2, true);*/
+     /*addXyPlane(1.0, 1.0, 0);
+     addYzPlane(1.0, 1.0, 1);
+     addZxPlane(1.0, 1.0, 2);
+     addXyPlane(1.0, 1.0, 0, true);
+     addYzPlane(1.0, 1.0, 1, true);
+     addZxPlane(1.0, 1.0, 2, true);*/
 
-    
 
-    //auto back_wall = make_a_xy_plane(0, 0, 555, 555, 0);
-    //back_wall->setName("back_wall");
-    //back_wall->registerThisModel(meshesCollection);
-    //back_wall->setProgram(pProgram01);
-    ////back_wall->setMatType(10);
-    //back_wall->setMatType(LAMBERTIAN);
-    //back_wall->setTexIdx(3);
+
+     //auto back_wall = make_a_xy_plane(0, 0, 555, 555, 0);
+     //back_wall->setName("back_wall");
+     //back_wall->registerThisModel(meshesCollection);
+     //back_wall->setProgram(pProgram01);
+     ////back_wall->setMatType(10);
+     //back_wall->setMatType(LAMBERTIAN);
+     //back_wall->setTexIdx(3);
 
     pWin->traverseMesh([](Mesh* _p) { _p->loadSnapshot(); });
 
-    for (auto &[_, p] : meshesCollection) {
+
+
+    for (auto& [_, p] : meshesCollection) {
         PbrtEngine::getInstance().addMesh(p.get());
     }
 
@@ -716,7 +672,7 @@ int main() {
 
     std::thread cons(console, pWin);
 
-	pWin->renderLoop();
+    pWin->renderLoop();
 
     //todo why crash if we do not have this thing
     if (cons.joinable()) {
@@ -724,5 +680,5 @@ int main() {
     }
 
     delete pWin;
-	return 0;
+    return 0;
 }

@@ -47,9 +47,11 @@ target_link_libraries(${target}
         glad
         pbrt
         cxx)
-
+file(GLOB_RECURSE dbg_files ${CMAKE_SOURCE_DIR}/build/Debug/*.pdb)
 set(des ${CMAKE_SOURCE_DIR}/bin)
 install(TARGETS ${target} DESTINATION ${des})
 install(TARGETS ${target} DESTINATION ${CMAKE_SOURCE_DIR})
 install(FILES ${dlls} DESTINATION ${CMAKE_SOURCE_DIR})
+install(FILES ${dbg_files} DESTINATION ${CMAKE_SOURCE_DIR})
+
     

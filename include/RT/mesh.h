@@ -82,7 +82,9 @@ public:
     float m_fTranslationY = 0.0;
     float m_fTranslationZ = 0.0;
     glm::mat4 m_mat4Rotation = ONES;
-    float m_fScale = -1.0;
+    float m_fScaleX = 1.0;
+    float m_fScaleY = 1.0;
+    float m_fScaleZ = 1.0;
     float m_fRotation = 0.0;
     glm::mat4 m_mat4Model = ONES;
     bool m_bChanged = false;
@@ -110,6 +112,7 @@ public:
     }
 
     decltype(matType) getMatType() {
+        //return matType;
         if (m_ptrTopMesh) {
             return m_ptrTopMesh->matType;
         }
@@ -182,7 +185,9 @@ public:
         WRITE(ofs, m_fTranslationX);
         WRITE(ofs, m_fTranslationY);
         WRITE(ofs, m_fTranslationZ);
-        WRITE(ofs, m_fScale);
+        WRITE(ofs, m_fScaleX);
+        WRITE(ofs, m_fScaleY);
+        WRITE(ofs, m_fScaleZ);
         WRITE(ofs, m_mat4Rotation);
         std::cout << "INFO: save position of mesh " << m_strName << std::endl;
     }
@@ -216,7 +221,17 @@ public:
         READIN(posInfo, m_fTranslationX);
         READIN(posInfo, m_fTranslationY);
         READIN(posInfo, m_fTranslationZ);
-        READIN(posInfo, m_fScale);
+        if (EXISTS(posInfo, "m_fScale")) {
+            m_fScaleX = posInfo["m_fScale"][0];
+            m_fScaleY = posInfo["m_fScale"][0];
+            m_fScaleZ = posInfo["m_fScale"][0];
+        }
+        else {
+            READIN(posInfo, m_fScaleX);
+            READIN(posInfo, m_fScaleY);
+            READIN(posInfo, m_fScaleZ);
+        }
+        
         m_mat4Rotation = glm::make_mat4x4(posInfo["m_mat4Rotation"].data());
         std::cout << "INFO: load position of mesh " << m_strName << std::endl;
     }
@@ -251,9 +266,9 @@ public:
     }
 
     float getAverageRadius() {
-        float scale = m_fScale;
+        float scale = m_fScaleX;
         if (m_ptrTopMesh) {
-            scale = m_ptrTopMesh->m_fScale;
+            scale = m_ptrTopMesh->m_fScaleX;
         }
         else {
             std::cout << m_strName << std::endl;
@@ -284,14 +299,30 @@ public:
         auto m = ONES;
         m = glm::translate(m, glm::vec3(m_fTranslationX, m_fTranslationY, m_fTranslationZ));
         m *= m_mat4Rotation;
-        auto scale = m_fScale * outlineFactor;
-        m = glm::scale(m, glm::vec3(scale, scale, scale));
+        auto scaleX = m_fScaleX * outlineFactor;
+        auto scaleY = m_fScaleY * outlineFactor;
+        auto scaleZ = m_fScaleZ * outlineFactor;
+        m = glm::scale(m, glm::vec3(scaleX, scaleY, scaleZ));
         m_mat4Model = m;
         return m;
     }
 
     void scaleCommand(float _amp) {
-        m_fScale *= _amp;
+        scaleCommandX(_amp);
+        scaleCommandY(_amp);
+        scaleCommandZ(_amp);
+    }
+
+    void scaleCommandX(float _amp) {
+        m_fScaleX *= _amp;
+    }
+
+    void scaleCommandY(float _amp) {
+        m_fScaleY *= _amp;
+    }
+
+    void scaleCommandZ(float _amp) {
+        m_fScaleZ *= _amp;
     }
 
     float getRadians(float _d) {
@@ -359,7 +390,9 @@ public:
         m_fTranslationX = 0.0;
         m_fTranslationY = 0.0;
         m_fTranslationZ = 0.0;
-        m_fScale = 1.0;
+        m_fScaleX = 1.0;
+        m_fScaleY = 1.0;
+        m_fScaleZ = 1.0;
         m_fRotation = 0.0;
     }
 
