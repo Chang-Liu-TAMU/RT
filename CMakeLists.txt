@@ -12,13 +12,19 @@ add_subdirectory(src/pbrt)
 add_subdirectory(src/cxx)
 add_subdirectory(src/glad)
 
+add_subdirectory(src/headers)
+
+
+set(rt_include ${CMAKE_CURRENT_SOURCE_DIR}/include/RT)
 set(target main)
-add_executable(${target} main.cpp)
+add_executable(${target} 
+        main.cpp)
+
 set(include_prefix ${CMAKE_SOURCE_DIR}/include)
 
 target_include_directories(${target} 
     PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/RT
+    ${rt_include}
     ${CMAKE_CURRENT_SOURCE_DIR}/include/thirdParty
     ${include_prefix}/thirdParty/assimp-master/include
     ${include_prefix}/thirdParty/assimp-master/build/include
